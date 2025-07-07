@@ -2,6 +2,10 @@ import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
 export async function middleware(request: NextRequest) {
+  // Temporarily disable middleware logic to debug 404 issues
+  return NextResponse.next()
+  
+  /*
   const supabaseResponse = NextResponse.next({
     request,
   })
@@ -49,6 +53,7 @@ export async function middleware(request: NextRequest) {
   // 3. Change the myNewResponse object instead of the supabaseResponse object
 
   return supabaseResponse
+  */
 }
 
 export const config = {
