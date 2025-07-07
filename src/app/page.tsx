@@ -201,7 +201,7 @@ export default function HomePage() {
                       <Star key={i} className="h-4 w-4 text-yellow-400 fill-current" />
                     ))}
                   </div>
-                  <p className="text-gray-600 mb-4">"{review.review}"</p>
+                  <p className="text-gray-600 mb-4">{review.review}</p>
                   <p className="font-semibold text-gray-900">- {review.name}</p>
                 </CardContent>
               </Card>

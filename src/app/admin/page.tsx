@@ -169,7 +169,7 @@ export default function AdminDashboard() {
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Dashboard</h1>
-          <p className="text-gray-600">Welcome back! Here's your BBQ Affair business overview.</p>
+          <p className="text-gray-600">Welcome back! Here&apos;s your BBQ Affair business overview.</p>
           
           {/* Period Selector */}
           <div className="flex gap-2 mt-4">
@@ -313,7 +313,7 @@ export default function AdminDashboard() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Clock className="h-5 w-5" />
-                  Today's Schedule
+                  Today&apos;s Schedule
                 </CardTitle>
               </CardHeader>
               <CardContent>

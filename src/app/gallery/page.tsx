@@ -372,7 +372,7 @@ export default function GalleryPage() {
                 {/* CTA */}
                 <div className="bg-orange-50 rounded-lg p-4 text-center">
                   <p className="text-sm text-gray-600 mb-3">
-                    Love what you see? Let's plan your perfect BBQ event!
+                    Love what you see? Let&apos;s plan your perfect BBQ event!
                   </p>
                   <div className="flex gap-2 justify-center">
                     <Button>

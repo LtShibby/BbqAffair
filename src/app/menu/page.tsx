@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
-import { WhatsAppButton, WhatsAppMessages } from '@/components/WhatsAppButton'
+import { WhatsAppButton } from '@/components/WhatsAppButton'
 import { Plus, Minus, ShoppingCart, Search } from 'lucide-react'
 
 // Mock data for demonstration
