@@ -19,21 +19,34 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined)
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
+  const [isClient, setIsClient] = useState(false)
 
   useEffect(() => {
-    // Check for demo login
+    // Mark that we're on the client side to prevent hydration mismatch
+    setIsClient(true)
+  }, [])
+
+  useEffect(() => {
+    // Only run auth check on client side to prevent hydration issues
+    if (!isClient) return
+
     const checkDemoLogin = () => {
-      const isDemoLoggedIn = localStorage.getItem('demo_admin_logged_in')
-      const demoUser = localStorage.getItem('demo_user')
-      
-      if (isDemoLoggedIn === 'true' && demoUser) {
-        setUser(JSON.parse(demoUser))
+      try {
+        const isDemoLoggedIn = localStorage.getItem('demo_admin_logged_in')
+        const demoUser = localStorage.getItem('demo_user')
+        
+        if (isDemoLoggedIn === 'true' && demoUser) {
+          setUser(JSON.parse(demoUser))
+        }
+      } catch (error) {
+        // Handle localStorage errors gracefully
+        console.warn('Error reading from localStorage:', error)
       }
       setLoading(false)
     }
 
     checkDemoLogin()
-  }, [])
+  }, [isClient])
 
   const signIn = async (email: string, password: string) => {
     // Demo authentication - accept demo@bbqaffair.com with any password
@@ -46,8 +59,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
       
       setUser(demoUser)
-      localStorage.setItem('demo_admin_logged_in', 'true')
-      localStorage.setItem('demo_user', JSON.stringify(demoUser))
+      try {
+        localStorage.setItem('demo_admin_logged_in', 'true')
+        localStorage.setItem('demo_user', JSON.stringify(demoUser))
+      } catch (error) {
+        console.warn('Error saving to localStorage:', error)
+      }
       
       return {}
     } else {
@@ -56,8 +73,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   const signOut = async () => {
-    localStorage.removeItem('demo_admin_logged_in')
-    localStorage.removeItem('demo_user')
+    try {
+      localStorage.removeItem('demo_admin_logged_in')
+      localStorage.removeItem('demo_user')
+    } catch (error) {
+      console.warn('Error clearing localStorage:', error)
+    }
     setUser(null)
   }
 
