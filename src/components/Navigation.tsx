@@ -2,19 +2,9 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { useAuth } from '@/context/AuthContext'
 import { Button } from '@/components/ui/button'
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
-import { Avatar, AvatarFallback } from '@/components/ui/avatar'
-import { User, LogOut } from 'lucide-react'
 
 export function Navigation() {
-  const { user, signOut } = useAuth()
   const pathname = usePathname()
 
   const isAdminRoute = pathname.startsWith('/admin')
@@ -51,7 +41,7 @@ export function Navigation() {
               </div>
             )}
 
-            {isAdminRoute && user && (
+            {isAdminRoute && (
               <div className="hidden md:flex space-x-6">
                 <Link
                   href="/admin"
@@ -84,50 +74,28 @@ export function Navigation() {
                   Menu Manager
                 </Link>
                 <Link
-                  href="/admin/schedule"
+                  href="/admin/analytics"
                   className={`transition-colors ${
-                    pathname === '/admin/schedule'
+                    pathname === '/admin/analytics'
                       ? 'text-orange-600 font-medium'
                       : 'text-gray-600 hover:text-orange-600'
                   }`}
                 >
-                  Schedule
+                  Analytics
                 </Link>
               </div>
             )}
           </div>
 
           <div className="flex items-center space-x-4">
+            <Button asChild>
+              <Link href="/book">Book Event</Link>
+            </Button>
+            
             {!isAdminRoute && (
-              <Button asChild>
-                <Link href="/book">Book Event</Link>
+              <Button asChild variant="outline">
+                <Link href="/admin">Demo Admin</Link>
               </Button>
-            )}
-
-            {user ? (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="relative h-8 w-8 rounded-full">
-                    <Avatar className="h-8 w-8">
-                      <AvatarFallback>
-                        <User className="h-4 w-4" />
-                      </AvatarFallback>
-                    </Avatar>
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent className="w-56" align="end" forceMount>
-                  <DropdownMenuItem onClick={() => signOut()}>
-                    <LogOut className="mr-2 h-4 w-4" />
-                    <span>Log out</span>
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            ) : (
-              isAdminRoute && (
-                <Button asChild variant="outline">
-                  <Link href="/auth/login">Login</Link>
-                </Button>
-              )
             )}
           </div>
         </div>
