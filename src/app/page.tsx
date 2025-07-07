@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { WhatsAppButton, WhatsAppMessages } from '@/components/WhatsAppButton'
-import { Flame, Users, Calendar, Star, Phone, MessageCircle } from 'lucide-react'
+import { Flame, Users, Calendar, Star } from 'lucide-react'
 
 export default function HomePage() {
   return (
@@ -49,7 +49,7 @@ export default function HomePage() {
         <div className="text-center mb-12">
           <h2 className="text-3xl font-bold text-gray-900 mb-4">Why Choose BBQ Affair?</h2>
           <p className="text-gray-600 max-w-2xl mx-auto">
-            We're not just caterers – we're experience creators who bring restaurant-quality BBQ to your doorstep.
+            We&apos;re not just caterers – we&apos;re experience creators who bring restaurant-quality BBQ to your doorstep.
           </p>
         </div>
 
@@ -140,7 +140,7 @@ export default function HomePage() {
         <div className="container mx-auto px-4 text-center">
           <h2 className="text-3xl font-bold mb-4">Ready to Fire Up Your Event?</h2>
           <p className="text-xl text-orange-100 mb-8 max-w-2xl mx-auto">
-            Get in touch with us today and let's make your BBQ dreams come true. 
+            Get in touch with us today and let&apos;s make your BBQ dreams come true. 
             Instant quotes, flexible scheduling, and unforgettable flavors await!
           </p>
           
@@ -180,17 +180,17 @@ export default function HomePage() {
             {[
               {
                 name: "Sarah Lim",
-                review: "BBQ Affair made our company retreat absolutely amazing! The food was incredible and the service was top-notch.",
+                                 review: "&quot;BBQ Affair made our company retreat absolutely amazing! The food was incredible and the service was top-notch.&quot;",
                 rating: 5
               },
               {
                 name: "David Wong",
-                review: "Perfect for our wedding reception. Guests are still talking about how delicious everything was!",
+                                 review: "&quot;Perfect for our wedding reception. Guests are still talking about how delicious everything was!&quot;",
                 rating: 5
               },
               {
                 name: "Michelle Tan",
-                review: "Professional, punctual, and the BBQ was restaurant quality. Will definitely book again!",
+                                 review: "&quot;Professional, punctual, and the BBQ was restaurant quality. Will definitely book again!&quot;",
                 rating: 5
               }
             ].map((review, index) => (

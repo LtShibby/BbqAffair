@@ -295,7 +295,7 @@ export default function ReviewsPage() {
                         key={option.value}
                         variant={sortBy === option.value ? 'default' : 'outline'}
                         size="sm"
-                        onClick={() => setSortBy(option.value as any)}
+                        onClick={() => setSortBy(option.value as 'newest' | 'oldest' | 'highest' | 'helpful')}
                       >
                         {option.label}
                       </Button>

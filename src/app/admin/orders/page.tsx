@@ -10,7 +10,6 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { 
   Search, 
-  Filter, 
   Download,
   ArrowLeft,
   Calendar, 
@@ -21,7 +20,6 @@ import {
   Eye,
   Edit,
   CheckCircle,
-  XCircle,
   Clock,
   DollarSign
 } from 'lucide-react'
@@ -163,7 +161,7 @@ const ordersData = [
 export default function OrdersManagementPage() {
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState('all')
-  const [selectedOrder, setSelectedOrder] = useState<any>(null)
+  const [selectedOrder, setSelectedOrder] = useState<typeof ordersData[0] | null>(null)
 
   const filteredOrders = ordersData
     .filter(order => {
@@ -518,7 +516,7 @@ export default function OrdersManagementPage() {
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-2">
-                      {selectedOrder.menuItems.map((item: any, index: number) => (
+                      {selectedOrder.menuItems.map((item: { name: string; quantity: number; price: number }, index: number) => (
                         <div key={index} className="flex justify-between items-center py-2 border-b">
                           <div>
                             <p className="font-medium">{item.name}</p>

@@ -6,7 +6,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { WhatsAppButton, WhatsAppMessages } from '@/components/WhatsAppButton'
-import { X, ChevronLeft, ChevronRight, Calendar, Users, MapPin } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Calendar, Users, MapPin } from 'lucide-react'
 
 // Mock gallery data
 const galleryImages = [
@@ -115,14 +115,14 @@ const categories = ['All Events', 'Corporate Events', 'Weddings', 'Private Parti
 
 export default function GalleryPage() {
   const [selectedCategory, setSelectedCategory] = useState('All Events')
-  const [selectedImage, setSelectedImage] = useState<any>(null)
+  const [selectedImage, setSelectedImage] = useState<typeof galleryImages[0] | null>(null)
   const [lightboxIndex, setLightboxIndex] = useState(0)
 
   const filteredImages = selectedCategory === 'All Events' 
     ? galleryImages 
     : galleryImages.filter(img => img.category === selectedCategory)
 
-  const openLightbox = (image: any, index: number) => {
+  const openLightbox = (image: typeof galleryImages[0], index: number) => {
     setSelectedImage(image)
     setLightboxIndex(index)
   }
@@ -152,7 +152,7 @@ export default function GalleryPage() {
             <h1 className="text-4xl font-bold text-gray-900 mb-4">Our Gallery</h1>
             <p className="text-xl text-gray-600 max-w-2xl mx-auto">
               Take a look at some of our recent BBQ events and celebrations. 
-              Every event is unique, and we're proud to be part of your special moments.
+              Every event is unique, and we&apos;re proud to be part of your special moments.
             </p>
           </div>
 
@@ -380,7 +380,7 @@ export default function GalleryPage() {
                     </Button>
                     <WhatsAppButton 
                       variant="outline"
-                      message={`Hi BBQ Affair! I saw your ${selectedImage.title} in the gallery and I'm interested in booking a similar ${selectedImage.eventType} for ${selectedImage.guestCount} guests. Could you help me with the details?`}
+                      message={`Hi BBQ Affair! I saw your ${selectedImage.title} in the gallery and I'm interested in booking a similar ${selectedImage.category} for ${selectedImage.guestCount} guests. Could you help me with the details?`}
                     >
                       WhatsApp Us
                     </WhatsAppButton>

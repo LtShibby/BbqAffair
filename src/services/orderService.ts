@@ -259,9 +259,16 @@ export class OrderService {
 
     if (error) throw error
 
+    interface ItemStat {
+      menu_item_id: string
+      name: string
+      total_quantity: number
+      order_count: number
+    }
+
     const itemStats = (data || []).reduce((acc, item) => {
       const id = item.menu_item_id
-      const menuItem = (item.menu_item as any)
+      const menuItem = item.menu_item as { name?: string } | null
       if (!acc[id]) {
         acc[id] = {
           menu_item_id: id,
@@ -273,10 +280,10 @@ export class OrderService {
       acc[id].total_quantity += item.quantity
       acc[id].order_count += 1
       return acc
-    }, {} as Record<string, any>)
+    }, {} as Record<string, ItemStat>)
 
     return Object.values(itemStats)
-      .sort((a: any, b: any) => b.total_quantity - a.total_quantity)
+      .sort((a: ItemStat, b: ItemStat) => b.total_quantity - a.total_quantity)
       .slice(0, limit)
   }
 

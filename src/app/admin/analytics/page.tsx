@@ -4,7 +4,6 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { 
   ArrowLeft,
@@ -15,13 +14,11 @@ import {
   Calendar, 
   Star,
   Download,
-  Filter,
   BarChart3,
   PieChart,
   Activity,
   Clock,
-  MapPin,
-  Phone
+  MapPin
 } from 'lucide-react'
 
 // Mock analytics data
@@ -99,7 +96,6 @@ const analyticsData = {
 
 export default function AnalyticsPage() {
   const [selectedPeriod, setSelectedPeriod] = useState('30d')
-  const [selectedMetric, setSelectedMetric] = useState('revenue')
 
   const formatCurrency = (amount: number) => `S$${amount.toLocaleString()}`
   const formatPercentage = (value: number) => `${value > 0 ? '+' : ''}${value.toFixed(1)}%`
@@ -255,7 +251,7 @@ export default function AnalyticsPage() {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {analyticsData.monthlyRevenue.map((month, index) => (
+                {analyticsData.monthlyRevenue.map((month) => (
                   <div key={month.month} className="flex items-center justify-between">
                     <span className="font-medium">{month.month}</span>
                     <div className="flex items-center gap-4">
@@ -323,7 +319,7 @@ export default function AnalyticsPage() {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {analyticsData.customerSegments.map((segment, index) => (
+                {analyticsData.customerSegments.map((segment) => (
                   <div key={segment.segment} className="space-y-2">
                     <div className="flex justify-between items-center">
                       <span className="font-medium">{segment.segment}</span>
@@ -358,7 +354,7 @@ export default function AnalyticsPage() {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {analyticsData.peakTimes.map((timeSlot, index) => (
+                {analyticsData.peakTimes.map((timeSlot) => (
                   <div key={timeSlot.timeSlot} className="space-y-2">
                     <div className="flex justify-between items-center">
                       <span className="font-medium">{timeSlot.timeSlot}</span>
@@ -392,7 +388,7 @@ export default function AnalyticsPage() {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {analyticsData.locationAnalytics.map((location, index) => (
+                {analyticsData.locationAnalytics.map((location) => (
                   <div key={location.area} className="flex items-center justify-between">
                     <span className="font-medium">{location.area}</span>
                     <div className="text-right">

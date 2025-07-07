@@ -17,11 +17,9 @@ import {
   Edit,
   Trash2,
   Search,
-  Filter,
   Save,
   Upload,
   Eye,
-  EyeOff,
   Star,
   DollarSign,
   Package
@@ -156,9 +154,8 @@ const menuItems = [
 export default function MenuManagementPage() {
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedCategory, setSelectedCategory] = useState('all')
-  const [selectedItem, setSelectedItem] = useState<any>(null)
+  const [selectedItem, setSelectedItem] = useState<typeof menuItems[0] | null>(null)
   const [isAddingItem, setIsAddingItem] = useState(false)
-  const [editingCategory, setEditingCategory] = useState<any>(null)
 
   // Form states
   const [itemForm, setItemForm] = useState({
@@ -212,7 +209,7 @@ export default function MenuManagementPage() {
     setIsAddingItem(true)
   }
 
-  const openEditItem = (item: any) => {
+  const openEditItem = (item: typeof menuItems[0]) => {
     setItemForm({
       name: item.name,
       description: item.description,

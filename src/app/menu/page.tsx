@@ -1,13 +1,12 @@
 'use client'
 
 import { useState } from 'react'
-import Image from 'next/image'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { WhatsAppButton, WhatsAppMessages } from '@/components/WhatsAppButton'
-import { Plus, Minus, ShoppingCart, Search, Filter } from 'lucide-react'
+import { Plus, Minus, ShoppingCart, Search } from 'lucide-react'
 
 // Mock data for demonstration
 const mockCategories = [
@@ -144,7 +143,7 @@ export default function MenuPage() {
   const [searchQuery, setSearchQuery] = useState('')
   const [cart, setCart] = useState<CartItem[]>([])
 
-  const addToCart = (item: any) => {
+  const addToCart = (item: { id: string; name: string; price: number }) => {
     setCart(prev => {
       const existing = prev.find(cartItem => cartItem.id === item.id)
       if (existing) {
@@ -348,7 +347,7 @@ function MenuItemCard({
   onAdd, 
   onRemove 
 }: { 
-  item: any
+  item: typeof mockMenuItems[0]
   quantity: number
   onAdd: () => void
   onRemove: () => void

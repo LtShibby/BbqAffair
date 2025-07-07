@@ -12,7 +12,7 @@ import { Calendar } from '@/components/ui/calendar'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { Badge } from '@/components/ui/badge'
 import { WhatsAppButton, WhatsAppMessages } from '@/components/WhatsAppButton'
-import { CalendarIcon, Clock, Users, MapPin, Phone, Mail, MessageSquare, ArrowLeft, ArrowRight } from 'lucide-react'
+import { CalendarIcon, Clock, Users, MapPin, Phone, Mail, ArrowLeft, ArrowRight } from 'lucide-react'
 import { format, addDays, isToday, isTomorrow } from 'date-fns'
 
 const timeSlots = [
@@ -70,7 +70,7 @@ export default function BookEventPage() {
     specialRequests: ''
   })
 
-  const updateFormData = (field: string, value: any) => {
+  const updateFormData = (field: string, value: string | Date | undefined) => {
     setFormData(prev => ({ ...prev, [field]: value }))
   }
 
@@ -120,7 +120,7 @@ export default function BookEventPage() {
           <div className="text-center mb-8">
             <h1 className="text-4xl font-bold text-gray-900 mb-4">Book Your BBQ Event</h1>
             <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-              Let's plan your perfect BBQ experience. Our team will handle everything!
+              Let&apos;s plan your perfect BBQ experience. Our team will handle everything!
             </p>
           </div>
 

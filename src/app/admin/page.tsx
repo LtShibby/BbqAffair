@@ -16,11 +16,7 @@ import {
   AlertCircle,
   Star,
   ChefHat,
-  MapPin,
-  Phone,
-  Mail,
-  ArrowUpRight,
-  MoreHorizontal
+  ArrowUpRight
 } from 'lucide-react'
 
 // Mock data for dashboard
