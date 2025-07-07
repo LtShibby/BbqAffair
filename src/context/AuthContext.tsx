@@ -1,13 +1,17 @@
 'use client'
 
 import { createContext, useContext, useEffect, useState } from 'react'
-import { User } from '@supabase/supabase-js'
-import { supabase, isSupabaseConfigured } from '@/lib/supabase'
+
+interface User {
+  id: string
+  email: string
+}
 
 interface AuthContextType {
   user: User | null
   loading: boolean
   signOut: () => Promise<void>
+  signIn: (email: string, password: string) => Promise<{ error?: string }>
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -17,81 +21,51 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    // Check for demo login first
+    // Check for demo login
     const checkDemoLogin = () => {
       const isDemoLoggedIn = localStorage.getItem('demo_admin_logged_in')
-      if (isDemoLoggedIn === 'true') {
-        // Create a mock user object for demo purposes
-        const demoUser = {
-          id: 'demo-user',
-          email: 'demo@bbqaffair.com',
-          app_metadata: {},
-          user_metadata: {},
-          aud: 'authenticated',
-          created_at: new Date().toISOString(),
-        } as User
-        setUser(demoUser)
-        setLoading(false)
-        return true
-      }
-      return false
-    }
-
-    // Get initial session
-    const getInitialSession = async () => {
-      // First check demo login
-      if (checkDemoLogin()) return
-
-      // If Supabase is not configured, just set loading to false
-      if (!isSupabaseConfigured || !supabase) {
-        setLoading(false)
-        return
-      }
-
-      try {
-        const { data: { session } } = await supabase.auth.getSession()
-        setUser(session?.user ?? null)
-      } catch (error) {
-        console.warn('Supabase auth error:', error)
-        setUser(null)
+      const demoUser = localStorage.getItem('demo_user')
+      
+      if (isDemoLoggedIn === 'true' && demoUser) {
+        setUser(JSON.parse(demoUser))
       }
       setLoading(false)
     }
 
-    getInitialSession()
-
-    // Listen for auth changes only if Supabase is configured
-    if (isSupabaseConfigured && supabase) {
-      const { data: { subscription } } = supabase.auth.onAuthStateChange(
-        async (event, session) => {
-          // Check demo login on auth state change
-          if (!checkDemoLogin()) {
-            setUser(session?.user ?? null)
-          }
-          setLoading(false)
-        }
-      )
-
-      return () => subscription.unsubscribe()
-    }
+    checkDemoLogin()
   }, [])
 
-  const signOut = async () => {
-    // Handle demo logout
-    localStorage.removeItem('demo_admin_logged_in')
-    
-    // Only sign out from Supabase if it's configured
-    if (isSupabaseConfigured && supabase) {
-      await supabase.auth.signOut()
+  const signIn = async (email: string, password: string) => {
+    // Demo authentication - accept demo@bbqaffair.com with any password
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const _ = password; // Password not validated in demo
+    if (email === 'demo@bbqaffair.com' || email === 'admin@bbqaffair.com') {
+      const demoUser = {
+        id: 'demo-user',
+        email: email,
+      }
+      
+      setUser(demoUser)
+      localStorage.setItem('demo_admin_logged_in', 'true')
+      localStorage.setItem('demo_user', JSON.stringify(demoUser))
+      
+      return {}
     } else {
-      setUser(null)
+      return { error: 'Invalid credentials. Use demo@bbqaffair.com or admin@bbqaffair.com' }
     }
+  }
+
+  const signOut = async () => {
+    localStorage.removeItem('demo_admin_logged_in')
+    localStorage.removeItem('demo_user')
+    setUser(null)
   }
 
   const value = {
     user,
     loading,
     signOut,
+    signIn,
   }
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

@@ -1,371 +1,186 @@
-import { supabase } from '@/lib/supabase'
-import { Order, OrderItem, Customer, CreateOrderInput, CreateCustomerInput } from '@/types/database'
-
-export interface OrderWithDetails extends Order {
-  customer: Customer
-  order_items: (OrderItem & {
-    menu_item: {
-      id: string
-      name: string
-      price: number
-    }
-  })[]
+// Mock data for demo purposes
+interface Customer {
+  id: string
+  name: string
+  email: string
+  phone: string
+  address: string
+  created_at: string
 }
 
+interface Order {
+  id: string
+  customer_id: string
+  event_date: string
+  event_time: string
+  guest_count: number
+  location: string
+  special_requests?: string
+  total_amount: number
+  status: 'pending' | 'confirmed' | 'preparing' | 'delivered' | 'cancelled'
+  created_at: string
+  updated_at: string
+}
+
+interface OrderItem {
+  id: string
+  order_id: string
+  menu_item_id: string
+  quantity: number
+  unit_price: number
+  total_price: number
+}
+
+// Mock storage
+const mockCustomers: Customer[] = []
+const mockOrders: Order[] = []
+const mockOrderItems: OrderItem[] = []
+
+// Simulate async operations
+const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
 export interface CreateOrderData {
-  customer: CreateCustomerInput
-  order: Omit<CreateOrderInput, 'customer_id'>
+  customerInfo: {
+    name: string
+    email: string
+    phone: string
+    address: string
+  }
+  eventDetails: {
+    date: string
+    time: string
+    guestCount: number
+    location: string
+    specialRequests?: string
+  }
   items: Array<{
-    menu_item_id: string
+    menuItemId: string
     quantity: number
-    unit_price: number
+    unitPrice: number
   }>
 }
 
-export class OrderService {
-  // Order Management
-  static async createOrder(orderData: CreateOrderData): Promise<OrderWithDetails> {
-    const { customer: customerData, order: orderInput, items } = orderData
+export async function createOrder(orderData: CreateOrderData): Promise<Order> {
+  await delay(500);
+  
+  // Create or find customer
+  let customer = mockCustomers.find(c => c.email === orderData.customerInfo.email);
+  if (!customer) {
+    customer = {
+      id: Date.now().toString(),
+      name: orderData.customerInfo.name,
+      email: orderData.customerInfo.email,
+      phone: orderData.customerInfo.phone,
+      address: orderData.customerInfo.address,
+      created_at: new Date().toISOString(),
+    };
+    mockCustomers.push(customer);
+  }
 
-    // Start a transaction by creating customer first
-    let customer: Customer
+  // Calculate total
+  const totalAmount = orderData.items.reduce((sum, item) => sum + (item.unitPrice * item.quantity), 0);
 
-    // Check if customer exists
-    const { data: existingCustomer } = await supabase
-      .from('customers')
-      .select('*')
-      .eq('email', customerData.email)
-      .single()
+  // Create order
+  const order: Order = {
+    id: Date.now().toString(),
+    customer_id: customer.id,
+    event_date: orderData.eventDetails.date,
+    event_time: orderData.eventDetails.time,
+    guest_count: orderData.eventDetails.guestCount,
+    location: orderData.eventDetails.location,
+    special_requests: orderData.eventDetails.specialRequests,
+    total_amount: totalAmount,
+    status: 'pending',
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+  };
 
-    if (existingCustomer) {
-      customer = existingCustomer
-    } else {
-      // Create new customer
-      const { data: newCustomer, error: customerError } = await supabase
-        .from('customers')
-        .insert(customerData)
-        .select()
-        .single()
+  mockOrders.push(order);
 
-      if (customerError) throw customerError
-      customer = newCustomer
-    }
-
-    // Calculate totals
-    const subtotal = items.reduce((sum, item) => sum + (item.unit_price * item.quantity), 0)
-    const taxAmount = subtotal * 0.08 // 8% GST for Singapore
-    const totalAmount = subtotal + taxAmount
-
-    // Create order
-    const { data: order, error: orderError } = await supabase
-      .from('orders')
-      .insert({
-        ...orderInput,
-        customer_id: customer.id,
-        subtotal,
-        tax_amount: taxAmount,
-        total_amount: totalAmount,
-      })
-      .select()
-      .single()
-
-    if (orderError) throw orderError
-
-    // Create order items
-    const orderItems = items.map(item => ({
+  // Create order items
+  for (const item of orderData.items) {
+    const orderItem: OrderItem = {
+      id: Date.now().toString() + Math.random(),
       order_id: order.id,
-      menu_item_id: item.menu_item_id,
+      menu_item_id: item.menuItemId,
       quantity: item.quantity,
-      unit_price: item.unit_price,
-      total_price: item.unit_price * item.quantity,
-    }))
-
-    const { data: createdItems, error: itemsError } = await supabase
-      .from('order_items')
-      .insert(orderItems)
-      .select(`
-        *,
-        menu_item:menu_items(id, name, price)
-      `)
-
-    if (itemsError) throw itemsError
-
-    return {
-      ...order,
-      customer,
-      order_items: createdItems,
-    }
+      unit_price: item.unitPrice,
+      total_price: item.unitPrice * item.quantity,
+    };
+    mockOrderItems.push(orderItem);
   }
 
-  static async getOrders(filters?: {
-    startDate?: string
-    endDate?: string
-    status?: string
-    customerId?: string
-  }): Promise<OrderWithDetails[]> {
-    let query = supabase
-      .from('orders')
-      .select(`
-        *,
-        customer:customers(*),
-        order_items(
-          *,
-          menu_item:menu_items(id, name, price)
-        )
-      `)
+  return order;
+}
 
-    if (filters?.startDate) {
-      query = query.gte('event_date', filters.startDate)
-    }
-
-    if (filters?.endDate) {
-      query = query.lte('event_date', filters.endDate)
-    }
-
-    if (filters?.status) {
-      query = query.eq('order_status', filters.status)
-    }
-
-    if (filters?.customerId) {
-      query = query.eq('customer_id', filters.customerId)
-    }
-
-    const { data, error } = await query.order('created_at', { ascending: false })
-
-    if (error) throw error
-    return data || []
+export async function getOrders(status?: string): Promise<Order[]> {
+  await delay(300);
+  if (status) {
+    return mockOrders.filter(order => order.status === status);
   }
+  return [...mockOrders];
+}
 
-  static async getOrder(id: string): Promise<OrderWithDetails | null> {
-    const { data, error } = await supabase
-      .from('orders')
-      .select(`
-        *,
-        customer:customers(*),
-        order_items(
-          *,
-          menu_item:menu_items(id, name, price, description, image_url)
-        )
-      `)
-      .eq('id', id)
-      .single()
+export async function getOrderById(id: string): Promise<Order | null> {
+  await delay(300);
+  return mockOrders.find(order => order.id === id) || null;
+}
 
-    if (error) {
-      if (error.code === 'PGRST116') return null // Not found
-      throw error
-    }
+export async function updateOrderStatus(id: string, status: Order['status']): Promise<Order | null> {
+  await delay(300);
+  const index = mockOrders.findIndex(order => order.id === id);
+  if (index === -1) return null;
 
-    return data
-  }
+  mockOrders[index] = {
+    ...mockOrders[index],
+    status,
+    updated_at: new Date().toISOString(),
+  };
+  return mockOrders[index];
+}
 
-  static async updateOrderStatus(id: string, status: Order['order_status'], adminNotes?: string): Promise<Order> {
-    const updates: Partial<Order> = { order_status: status }
-    if (adminNotes !== undefined) {
-      updates.admin_notes = adminNotes
-    }
+export async function getOrderItems(orderId: string): Promise<OrderItem[]> {
+  await delay(300);
+  return mockOrderItems.filter(item => item.order_id === orderId);
+}
 
-    const { data, error } = await supabase
-      .from('orders')
-      .update(updates)
-      .eq('id', id)
-      .select()
-      .single()
+export async function getOrderStats() {
+  await delay(300);
+  const now = new Date();
+  const thisMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+  
+  const thisMonthOrders = mockOrders.filter(order => new Date(order.created_at) >= thisMonth);
+  
+  return {
+    totalOrders: mockOrders.length,
+    pendingOrders: mockOrders.filter(order => order.status === 'pending').length,
+    thisMonthOrders: thisMonthOrders.length,
+    thisMonthRevenue: thisMonthOrders.reduce((sum, order) => sum + order.total_amount, 0),
+    totalRevenue: mockOrders.reduce((sum, order) => sum + order.total_amount, 0),
+  };
+}
 
-    if (error) throw error
-    return data
-  }
+export async function getRecentOrders(limit: number = 5): Promise<Order[]> {
+  await delay(300);
+  return mockOrders
+    .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+    .slice(0, limit);
+}
 
-  static async updatePaymentStatus(
-    id: string, 
-    paymentStatus: Order['payment_status'],
-    stripePaymentIntentId?: string,
-    paynowReceiptUrl?: string
-  ): Promise<Order> {
-    const updates: Partial<Order> = { payment_status: paymentStatus }
-    
-    if (stripePaymentIntentId) {
-      updates.stripe_payment_intent_id = stripePaymentIntentId
-    }
-    
-    if (paynowReceiptUrl) {
-      updates.paynow_receipt_url = paynowReceiptUrl
-    }
+export async function deleteOrder(id: string): Promise<boolean> {
+  await delay(300);
+  const orderIndex = mockOrders.findIndex(order => order.id === id);
+  if (orderIndex === -1) return false;
 
-    const { data, error } = await supabase
-      .from('orders')
-      .update(updates)
-      .eq('id', id)
-      .select()
-      .single()
+  // Remove order items
+  const itemIndexes = mockOrderItems
+    .map((item, index) => item.order_id === id ? index : -1)
+    .filter(index => index !== -1)
+    .reverse(); // Remove from end to avoid index shifting
 
-    if (error) throw error
-    return data
-  }
+  itemIndexes.forEach(index => mockOrderItems.splice(index, 1));
 
-  static async deleteOrder(id: string): Promise<void> {
-    const { error } = await supabase
-      .from('orders')
-      .delete()
-      .eq('id', id)
-
-    if (error) throw error
-  }
-
-  // Analytics and Reporting
-  static async getOrdersAnalytics(filters?: {
-    startDate?: string
-    endDate?: string
-  }) {
-    let query = supabase
-      .from('orders')
-      .select('total_amount, payment_status, order_status, event_date, created_at')
-
-    if (filters?.startDate) {
-      query = query.gte('event_date', filters.startDate)
-    }
-
-    if (filters?.endDate) {
-      query = query.lte('event_date', filters.endDate)
-    }
-
-    const { data, error } = await query
-
-    if (error) throw error
-
-    const orders = data || []
-    
-    return {
-      totalOrders: orders.length,
-      totalRevenue: orders
-        .filter(order => order.payment_status === 'paid')
-        .reduce((sum, order) => sum + order.total_amount, 0),
-      pendingOrders: orders.filter(order => order.order_status === 'pending').length,
-      completedOrders: orders.filter(order => order.order_status === 'completed').length,
-      paidOrders: orders.filter(order => order.payment_status === 'paid').length,
-      averageOrderValue: orders.length > 0 
-        ? orders.reduce((sum, order) => sum + order.total_amount, 0) / orders.length 
-        : 0,
-    }
-  }
-
-  static async getPopularMenuItems(limit = 10) {
-    const { data, error } = await supabase
-      .from('order_items')
-      .select(`
-        menu_item_id,
-        quantity,
-        menu_item:menu_items(name)
-      `)
-
-    if (error) throw error
-
-    interface ItemStat {
-      menu_item_id: string
-      name: string
-      total_quantity: number
-      order_count: number
-    }
-
-    const itemStats = (data || []).reduce((acc, item) => {
-      const id = item.menu_item_id
-      const menuItem = item.menu_item as { name?: string } | null
-      if (!acc[id]) {
-        acc[id] = {
-          menu_item_id: id,
-          name: menuItem?.name || 'Unknown',
-          total_quantity: 0,
-          order_count: 0,
-        }
-      }
-      acc[id].total_quantity += item.quantity
-      acc[id].order_count += 1
-      return acc
-    }, {} as Record<string, ItemStat>)
-
-    return Object.values(itemStats)
-      .sort((a: ItemStat, b: ItemStat) => b.total_quantity - a.total_quantity)
-      .slice(0, limit)
-  }
-
-  // Customer Management
-  static async getCustomers(): Promise<Customer[]> {
-    const { data, error } = await supabase
-      .from('customers')
-      .select('*')
-      .order('created_at', { ascending: false })
-
-    if (error) throw error
-    return data || []
-  }
-
-  static async getCustomer(id: string): Promise<Customer | null> {
-    const { data, error } = await supabase
-      .from('customers')
-      .select('*')
-      .eq('id', id)
-      .single()
-
-    if (error) {
-      if (error.code === 'PGRST116') return null // Not found
-      throw error
-    }
-
-    return data
-  }
-
-  static async updateCustomer(id: string, updates: Partial<Customer>): Promise<Customer> {
-    const { data, error } = await supabase
-      .from('customers')
-      .update(updates)
-      .eq('id', id)
-      .select()
-      .single()
-
-    if (error) throw error
-    return data
-  }
-
-  // Export functionality
-  static async exportOrders(filters?: {
-    startDate?: string
-    endDate?: string
-    status?: string
-  }) {
-    const orders = await this.getOrders(filters)
-    
-    // Convert to CSV format
-    const csvHeaders = [
-      'Order ID',
-      'Customer Name',
-      'Customer Email',
-      'Event Date',
-      'Event Time',
-      'Guest Count',
-      'Venue',
-      'Total Amount',
-      'Payment Status',
-      'Order Status',
-      'Created At'
-    ]
-
-    const csvRows = orders.map(order => [
-      order.id,
-      order.customer.name,
-      order.customer.email,
-      order.event_date,
-      order.event_time,
-      order.guest_count,
-      order.venue_address,
-      order.total_amount,
-      order.payment_status,
-      order.order_status,
-      new Date(order.created_at).toLocaleDateString()
-    ])
-
-    return {
-      headers: csvHeaders,
-      rows: csvRows,
-      filename: `orders_export_${new Date().toISOString().split('T')[0]}.csv`
-    }
-  }
+  // Remove order
+  mockOrders.splice(orderIndex, 1);
+  return true;
 } 
