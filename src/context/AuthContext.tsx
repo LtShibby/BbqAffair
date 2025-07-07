@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useEffect, useState } from 'react'
 import { User } from '@supabase/supabase-js'
-import { supabase } from '@/lib/supabase'
+import { supabase, isSupabaseConfigured } from '@/lib/supabase'
 
 interface AuthContextType {
   user: User | null
@@ -42,31 +42,50 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       // First check demo login
       if (checkDemoLogin()) return
 
-      const { data: { session } } = await supabase.auth.getSession()
-      setUser(session?.user ?? null)
+      // If Supabase is not configured, just set loading to false
+      if (!isSupabaseConfigured || !supabase) {
+        setLoading(false)
+        return
+      }
+
+      try {
+        const { data: { session } } = await supabase.auth.getSession()
+        setUser(session?.user ?? null)
+      } catch (error) {
+        console.warn('Supabase auth error:', error)
+        setUser(null)
+      }
       setLoading(false)
     }
 
     getInitialSession()
 
-    // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        // Check demo login on auth state change
-        if (!checkDemoLogin()) {
-          setUser(session?.user ?? null)
+    // Listen for auth changes only if Supabase is configured
+    if (isSupabaseConfigured && supabase) {
+      const { data: { subscription } } = supabase.auth.onAuthStateChange(
+        async (event, session) => {
+          // Check demo login on auth state change
+          if (!checkDemoLogin()) {
+            setUser(session?.user ?? null)
+          }
+          setLoading(false)
         }
-        setLoading(false)
-      }
-    )
+      )
 
-    return () => subscription.unsubscribe()
+      return () => subscription.unsubscribe()
+    }
   }, [])
 
   const signOut = async () => {
     // Handle demo logout
     localStorage.removeItem('demo_admin_logged_in')
-    await supabase.auth.signOut()
+    
+    // Only sign out from Supabase if it's configured
+    if (isSupabaseConfigured && supabase) {
+      await supabase.auth.signOut()
+    } else {
+      setUser(null)
+    }
   }
 
   const value = {
